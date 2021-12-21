@@ -9,7 +9,6 @@ class FavDishRepository(private var favDishDao: FavDishDao) {
     suspend fun insertFavDishData(favDish: FavDish){
         favDishDao.insertFavDishesDetails(favDish)
     }
-
     val allDishesList: Flow<List<FavDish>> = favDishDao.getAllDishesList()
 
 }

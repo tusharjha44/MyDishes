@@ -3,23 +3,23 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/navigation_home">
+    app:startDestination="@+id/navigation_all_dishes">
 
     <fragment
-        android:id="@+id/navigation_home"
-        android:name="com.example.mydishes.view.fragments.AddDishesFragment"
+        android:id="@+id/navigation_all_dishes"
+        android:name="com.example.mydishes.view.fragments.AllDishesFragment"
         android:label="@string/title_home"
-        tools:layout="@layout/fragment_add_dish" />
+        tools:layout="@layout/fragment_all_dish" />
 
     <fragment
-        android:id="@+id/navigation_dashboard"
-        android:name="com.example.mydishes.view.fragments.DashboardFragment"
+        android:id="@+id/navigation_favourite_dishes"
+        android:name="com.example.mydishes.view.fragments.FavouriteDishesFragment"
         android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard" />
+        tools:layout="@layout/fragment_favourite_dishes" />
 
     <fragment
-        android:id="@+id/navigation_notifications"
-        android:name="com.example.mydishes.view.fragments.NotificationsFragment"
+        android:id="@+id/navigation_random_dishes"
+        android:name="com.example.mydishes.view.fragments.RandomDishesFragment"
         android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_notifications" />
+        tools:layout="@layout/fragment_random_dishes" />
 </navigation>

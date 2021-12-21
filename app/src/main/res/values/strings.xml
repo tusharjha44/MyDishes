@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">MyDishes</string>
-    <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="title_home">All Dishes</string>
+    <string name="title_dashboard">Favourite Dishes</string>
+    <string name="title_notifications">Random Dishes</string>
     <string name="splash_screen_title">My Dishes</string>
     <string name="add_dish">Add Dish</string>
         <string name="title_all_dishes">All Dishes</string>
