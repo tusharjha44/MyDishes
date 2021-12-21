@@ -11,6 +11,7 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -19,14 +20,25 @@ import android.text.TextUtils
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
+import com.example.mydishes.application.FavDishApplication
 import com.example.mydishes.databinding.DialogCustomListBinding
+import com.example.mydishes.model.entities.FavDish
 import com.example.mydishes.utils.Constants
 import com.example.mydishes.view.adapters.CustomListItemAdapter
+import com.example.mydishes.viewmodel.FavDishViewModel
+import com.example.mydishes.viewmodel.FavDishViewModelFactory
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
@@ -47,6 +59,10 @@ class AddUpdateDishActivity : AppCompatActivity(), View.OnClickListener {
     private var mImagePath: String = ""
 
     private lateinit var mCustomListDialog: Dialog
+
+    private val mFavDishViewModel: FavDishViewModel by viewModels {
+        FavDishViewModelFactory((application as FavDishApplication).repository)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -154,11 +170,30 @@ class AddUpdateDishActivity : AppCompatActivity(), View.OnClickListener {
                         ).show()
                     }
                     else -> {
+                        val favDishDetails: FavDish = FavDish(
+                            mImagePath,
+                            Constants.DISH_IMAGE_SOURCE_LOCAL,
+                            title,
+                            type,
+                            category,
+                            ingredients,
+                            cookingTimeInMinutes,
+                            cookingDirection,
+                            false,
+                        )
+
+                        mFavDishViewModel.insert(favDishDetails)
+
                         Toast.makeText(
                             this@AddUpdateDishActivity,
-                            "All the entries are valid.",
+                            "You successfully added your favorite dish details.",
                             Toast.LENGTH_SHORT
                         ).show()
+
+                        // You even print the log if Toast is not displayed on emulator
+                        Log.e("Insertion", "Success")
+                        // Finish the Activity
+                        finish()
                     }
                 }
 
@@ -181,6 +216,7 @@ class AddUpdateDishActivity : AppCompatActivity(), View.OnClickListener {
                         .into(mBinding.ivDishImage)
 
                     mImagePath = saveImageToInternalStorage(thumbnail)
+                    Log.i("imagePath",mImagePath)
 
                     mBinding.ivAddDishImage.setImageDrawable(
                         ContextCompat.getDrawable(
@@ -198,6 +234,34 @@ class AddUpdateDishActivity : AppCompatActivity(), View.OnClickListener {
                     Glide.with(this)
                         .load(selectedPhotoUri)
                         .centerCrop()
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .listener(object: RequestListener<Drawable>{
+                            override fun onLoadFailed(
+                                e: GlideException?,
+                                model: Any?,
+                                target: Target<Drawable>?,
+                                isFirstResource: Boolean
+                            ): Boolean {
+                                Log.e("TAG", "Error loading image", e)
+                                return false
+                            }
+
+                            override fun onResourceReady(
+                                resource: Drawable?,
+                                model: Any?,
+                                target: Target<Drawable>?,
+                                dataSource: DataSource?,
+                                isFirstResource: Boolean
+                            ): Boolean {
+                                resource?.let {
+                                    val bitmap: Bitmap = resource.toBitmap()
+
+                                    mImagePath = saveImageToInternalStorage(bitmap)
+                                    Log.i("ImagePath", mImagePath)
+                                }
+                                return false
+                            }
+                        })
                         .into(mBinding.ivDishImage)
 
                     mBinding.ivAddDishImage.setImageDrawable(
