@@ -5,11 +5,14 @@ import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.mydishes.R
 import com.example.mydishes.application.FavDishApplication
 import com.example.mydishes.databinding.FragmentAllDishBinding
+import com.example.mydishes.model.entities.FavDish
 import com.example.mydishes.view.activities.AddUpdateDishActivity
+import com.example.mydishes.view.activities.MainActivity
 import com.example.mydishes.view.adapters.FavDishAdapter
 import com.example.mydishes.viewmodel.FavDishViewModel
 import com.example.mydishes.viewmodel.FavDishViewModelFactory
@@ -26,10 +29,6 @@ class AllDishesFragment : Fragment() {
     }
 
     private var _binding: FragmentAllDishBinding? = null
-
-    // This property is only valid between onCreateView and
-    // onDestroyView.
-    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -73,12 +72,30 @@ class AllDishesFragment : Fragment() {
                     favDishAdapter.dishesList(it)
                 } else {
 
-                    binding?.rvDishesList?.visibility = View.GONE
+                    _binding?.rvDishesList?.visibility = View.GONE
                     _binding?.tvNoDishesAddedYet?.visibility = View.VISIBLE
                 }
             }
         }
     }
+    fun dishDetails(favDish : FavDish){
+
+        findNavController().navigate(AllDishesFragmentDirections.actionNavigationAllDishesToDishDetailsFragment(
+            favDish
+        ))
+        if(requireActivity() is MainActivity){
+            (activity as MainActivity?)?.hideBottomNavigationView()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        if(requireActivity() is MainActivity){
+            (activity as MainActivity?)?.showBottomNavigationView()
+        }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
