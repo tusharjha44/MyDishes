@@ -23,4 +23,6 @@ interface FavDishDao {
     @Query("SELECT * FROM FAV_DISHES_TABLE WHERE favorite_dish = 1")
     fun getFavoriteDishesList(): Flow<List<FavDish>>
 
+    @Delete
+    suspend fun deleteFavDishDetails(favDish: FavDish)
 }

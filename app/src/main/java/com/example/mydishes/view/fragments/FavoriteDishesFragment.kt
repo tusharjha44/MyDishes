@@ -60,17 +60,17 @@ class FavoriteDishesFragment : Fragment() {
 
         findNavController().navigate(FavoriteDishesFragmentDirections.actionNavigationFavouriteDishesToDishDetailsFragment(favDish))
 
-        if(requireActivity() is MainActivity){
-            (activity as MainActivity?)!!.hideBottomNavigationView()
-        }
+//        if(requireActivity() is MainActivity){
+//            (activity as MainActivity?)!!.hideBottomNavigationView()
+//        }
     }
 
-    override fun onResume() {
-        super.onResume()
-        if(requireActivity() is MainActivity){
-            (activity as MainActivity?)!!.showBottomNavigationView()
-        }
-    }
+//    override fun onResume() {
+//        super.onResume()
+//        if(requireActivity() is MainActivity){
+//            (activity as MainActivity?)!!.showBottomNavigationView()
+//        }
+//    }
 
     override fun onDestroy() {
         super.onDestroy()

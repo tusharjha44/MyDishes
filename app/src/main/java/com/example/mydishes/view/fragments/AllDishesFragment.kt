@@ -1,5 +1,6 @@
 package com.example.mydishes.view.fragments
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.*
@@ -12,7 +13,6 @@ import com.example.mydishes.application.FavDishApplication
 import com.example.mydishes.databinding.FragmentAllDishBinding
 import com.example.mydishes.model.entities.FavDish
 import com.example.mydishes.view.activities.AddUpdateDishActivity
-import com.example.mydishes.view.activities.MainActivity
 import com.example.mydishes.view.adapters.FavDishAdapter
 import com.example.mydishes.viewmodel.FavDishViewModel
 import com.example.mydishes.viewmodel.FavDishViewModelFactory
@@ -78,23 +78,48 @@ class AllDishesFragment : Fragment() {
             }
         }
     }
+
+    fun deleteDish(dish: FavDish) {
+        val builder = AlertDialog.Builder(requireActivity())
+        //set title for alert dialog
+        builder.setTitle(resources.getString(R.string.title_delete_dish))
+        //set message for alert dialog
+        builder.setMessage(resources.getString(R.string.msg_delete_dish_dialog, dish.title))
+        builder.setIcon(android.R.drawable.ic_dialog_alert)
+
+        //performing positive action
+        builder.setPositiveButton(resources.getString(R.string.lbl_yes)) { dialogInterface, _ ->
+            mFavDishViewModel.delete(dish)
+            dialogInterface.dismiss() // Dialog will be dismissed
+        }
+        //performing negative action
+        builder.setNegativeButton(resources.getString(R.string.lbl_no)) { dialogInterface, _ ->
+            dialogInterface.dismiss() // Dialog will be dismissed
+        }
+        // Create the AlertDialog
+        val alertDialog: AlertDialog = builder.create()
+        // Set other dialog properties
+        alertDialog.setCancelable(false) // Will not allow user to cancel after clicking on remaining screen area.
+        alertDialog.show()  // show the dialog to UI
+    }
+
+
     fun dishDetails(favDish : FavDish){
 
         findNavController().navigate(AllDishesFragmentDirections.actionNavigationAllDishesToDishDetailsFragment(
             favDish
         ))
-        if(requireActivity() is MainActivity){
-            (activity as MainActivity?)?.hideBottomNavigationView()
-        }
+//        if(requireActivity() is MainActivity){
+//            (activity as MainActivity?)!!.hideBottomNavigationView()
+//        }
     }
 
-    override fun onResume() {
-        super.onResume()
-
-        if(requireActivity() is MainActivity){
-            (activity as MainActivity?)?.showBottomNavigationView()
-        }
-    }
+//    override fun onResume() {
+//        super.onResume()
+//        if(requireActivity() is MainActivity){
+//            (activity as MainActivity?)!!.showBottomNavigationView()
+//        }
+//    }
 
     override fun onDestroyView() {
         super.onDestroyView()
