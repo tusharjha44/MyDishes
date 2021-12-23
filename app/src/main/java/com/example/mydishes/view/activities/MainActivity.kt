@@ -15,32 +15,31 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
-    private lateinit var mNvController: NavController
+    private lateinit var mNavController: NavController
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        mNvController = findNavController(R.id.nav_host_fragment_activity_main)
-        // Passing each menu ID as a set of Ids because each
+        mNavController = findNavController(R.id.nav_host_fragment)        // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         val appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.navigation_all_dishes, R.id.navigation_favourite_dishes, R.id.navigation_random_dishes
             )
         )
-        setupActionBarWithNavController(navController = mNvController, appBarConfiguration)
-        binding.navView.setupWithNavController(mNvController)
+        setupActionBarWithNavController(mNavController, appBarConfiguration)
+        binding.navView.setupWithNavController(mNavController)
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        return NavigationUI.navigateUp(mNvController,null)
+        return NavigationUI.navigateUp(mNavController,null)
     }
 
     fun hideBottomNavigationView(){
          binding.navView.clearAnimation()
-        binding.navView.animate().translationY(binding.navView.height.toFloat()).duration = 300
+         binding.navView.animate().translationY(binding.navView.height.toFloat()).duration = 300
     }
 
     fun showBottomNavigationView(){
