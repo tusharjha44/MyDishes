@@ -1,18 +1,24 @@
 package com.example.mydishes.view.fragments
 
 import android.app.AlertDialog
+import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mydishes.R
 import com.example.mydishes.application.FavDishApplication
+import com.example.mydishes.databinding.DialogCustomListBinding
 import com.example.mydishes.databinding.FragmentAllDishBinding
 import com.example.mydishes.model.entities.FavDish
+import com.example.mydishes.utils.Constants
 import com.example.mydishes.view.activities.AddUpdateDishActivity
+import com.example.mydishes.view.adapters.CustomListItemAdapter
 import com.example.mydishes.view.adapters.FavDishAdapter
 import com.example.mydishes.viewmodel.FavDishViewModel
 import com.example.mydishes.viewmodel.FavDishViewModelFactory
@@ -28,15 +34,17 @@ class AllDishesFragment : Fragment() {
         FavDishViewModelFactory((requireActivity().application as FavDishApplication).repository)
     }
 
-    private var _binding: FragmentAllDishBinding? = null
+    private lateinit var mFavDishAdapter: FavDishAdapter
+    private lateinit var mCustomListDialog: Dialog
+    private lateinit var mBinding: FragmentAllDishBinding
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentAllDishBinding.inflate(inflater,container,false)
-        return _binding!!.root
+        mBinding = FragmentAllDishBinding.inflate(inflater,container,false)
+        return mBinding.root
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -50,6 +58,10 @@ class AllDishesFragment : Fragment() {
                 startActivity(Intent(requireActivity(),AddUpdateDishActivity::class.java))
                 return true
             }
+            R.id.action_filter_dishes ->{
+                filterDishesListDialog()
+                return true
+            }
         }
         return super.onOptionsItemSelected(item)
     }
@@ -57,23 +69,64 @@ class AllDishesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        _binding?.rvDishesList?.layoutManager = GridLayoutManager(requireActivity(),2)
-        val favDishAdapter = FavDishAdapter(this)
-        _binding?.rvDishesList?.adapter = favDishAdapter
+        mBinding.rvDishesList.layoutManager = GridLayoutManager(requireActivity(),2)
+        mFavDishAdapter = FavDishAdapter(this)
+        mBinding.rvDishesList.adapter = mFavDishAdapter
 
         mFavDishViewModel.allDishesList.observe(viewLifecycleOwner){
             dishes ->
             dishes.let {
                 if (it.isNotEmpty()) {
 
-                    _binding?.rvDishesList?.visibility = View.VISIBLE
-                    _binding?.tvNoDishesAddedYet?.visibility = View.GONE
+                    mBinding.rvDishesList.visibility = View.VISIBLE
+                    mBinding.tvNoDishesAddedYet.visibility = View.GONE
 
-                    favDishAdapter.dishesList(it)
+                    mFavDishAdapter.dishesList(it)
                 } else {
 
-                    _binding?.rvDishesList?.visibility = View.GONE
-                    _binding?.tvNoDishesAddedYet?.visibility = View.VISIBLE
+                    mBinding.rvDishesList.visibility = View.GONE
+                    mBinding.tvNoDishesAddedYet.visibility = View.VISIBLE
+                }
+            }
+        }
+    }
+
+    fun filterSelection(filterItemSelection: String) {
+
+        mCustomListDialog.dismiss()
+
+        Log.i("Filter Selection", filterItemSelection)
+
+        if (filterItemSelection == Constants.ALL_ITEMS) {
+            mFavDishViewModel.allDishesList.observe(viewLifecycleOwner) { dishes ->
+                dishes.let {
+                    if (it.isNotEmpty()) {
+
+                        mBinding.rvDishesList.visibility = View.VISIBLE
+                        mBinding.tvNoDishesAddedYet.visibility = View.GONE
+
+                        mFavDishAdapter.dishesList(it)
+                    } else {
+
+                        mBinding.rvDishesList.visibility = View.GONE
+                        mBinding.tvNoDishesAddedYet.visibility = View.VISIBLE
+                    }
+                }
+            }
+        } else {
+            mFavDishViewModel.getFilteredList(filterItemSelection).observe(viewLifecycleOwner){
+                dishes->
+                dishes.let {
+                    if(it.isNotEmpty()){
+                        mBinding.rvDishesList.visibility = View.VISIBLE
+                        mBinding.tvNoDishesAddedYet.visibility = View.GONE
+
+                        mFavDishAdapter.dishesList(it)
+                    }else{
+                        mBinding.rvDishesList.visibility = View.GONE
+                        mBinding.tvNoDishesAddedYet.visibility = View.VISIBLE
+
+                    }
                 }
             }
         }
@@ -81,28 +134,45 @@ class AllDishesFragment : Fragment() {
 
     fun deleteDish(dish: FavDish) {
         val builder = AlertDialog.Builder(requireActivity())
-        //set title for alert dialog
         builder.setTitle(resources.getString(R.string.title_delete_dish))
-        //set message for alert dialog
         builder.setMessage(resources.getString(R.string.msg_delete_dish_dialog, dish.title))
         builder.setIcon(android.R.drawable.ic_dialog_alert)
 
-        //performing positive action
         builder.setPositiveButton(resources.getString(R.string.lbl_yes)) { dialogInterface, _ ->
             mFavDishViewModel.delete(dish)
-            dialogInterface.dismiss() // Dialog will be dismissed
+            dialogInterface.dismiss()
         }
-        //performing negative action
         builder.setNegativeButton(resources.getString(R.string.lbl_no)) { dialogInterface, _ ->
-            dialogInterface.dismiss() // Dialog will be dismissed
+            dialogInterface.dismiss()
         }
-        // Create the AlertDialog
         val alertDialog: AlertDialog = builder.create()
-        // Set other dialog properties
-        alertDialog.setCancelable(false) // Will not allow user to cancel after clicking on remaining screen area.
-        alertDialog.show()  // show the dialog to UI
+        alertDialog.setCancelable(false)
+        alertDialog.show()
     }
 
+    private fun filterDishesListDialog() {
+        mCustomListDialog = Dialog(requireActivity())
+
+        val binding: DialogCustomListBinding = DialogCustomListBinding.inflate(layoutInflater)
+
+        mCustomListDialog.setContentView(binding.root)
+
+        binding.tvTitle.text = resources.getString(R.string.title_select_item_to_filter)
+
+        val dishTypes = Constants.dishTypes()
+        dishTypes.add(0, Constants.ALL_ITEMS)
+
+        binding.rvList.layoutManager = LinearLayoutManager(requireActivity())
+
+        val adapter = CustomListItemAdapter(
+            requireActivity(),
+            this@AllDishesFragment,
+            dishTypes,
+            Constants.FILTER_SELECTION
+        )
+        binding.rvList.adapter = adapter
+        mCustomListDialog.show()
+    }
 
     fun dishDetails(favDish : FavDish){
 
@@ -121,8 +191,4 @@ class AllDishesFragment : Fragment() {
 //        }
 //    }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
 }
