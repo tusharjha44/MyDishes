@@ -50,6 +50,10 @@ class RandomDishFragment : Fragment() {
 
         randomDishViewModelObserver()
 
+        mBinding!!.srlRandomDish.setOnRefreshListener {
+            mRandomDishViewModel.getRandomDishFromAPI()
+        }
+
     }
 
     private fun randomDishViewModelObserver() {
