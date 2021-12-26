@@ -9,8 +9,12 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import androidx.work.*
 import com.example.mydishes.R
 import com.example.mydishes.databinding.ActivityMainBinding
+import com.example.mydishes.model.notifications.NotificationWorker
+import com.example.mydishes.utils.Constants
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,6 +36,13 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(mNavController, appBarConfiguration)
         binding.navView.setupWithNavController(mNavController)
+
+        if(intent.hasExtra(Constants.NOTIFICATION_ID)){
+            val notificationId = intent.getIntExtra(Constants.NOTIFICATION_ID,0)
+            binding.navView.selectedItemId = R.id.navigation_random_dishes
+        }
+        startWork()
+
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -43,6 +54,25 @@ class MainActivity : AppCompatActivity() {
          binding.navView.animate().translationY(binding.navView.height.toFloat()).duration = 300
         binding.navView.visibility = View.GONE
 
+    }
+
+    private fun creteConstraints() = Constraints.Builder()
+        .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
+        .setRequiresCharging(false)
+        .setRequiresBatteryNotLow(true)
+        .build()
+
+    private fun createWorkRequest() = PeriodicWorkRequestBuilder<NotificationWorker>(3,TimeUnit.HOURS)
+        .setConstraints(creteConstraints())
+        .build()
+
+    private fun startWork(){
+        WorkManager.getInstance(this)
+            .enqueueUniquePeriodicWork(
+                "MyDish Notifications Worker",
+                ExistingPeriodicWorkPolicy.KEEP,
+                createWorkRequest()
+            )
     }
 
     fun showBottomNavigationView(){
